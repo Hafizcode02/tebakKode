@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Gateway\EventLogGateway;
-use App\Gateway\QuestionLogGateway;
+use App\Gateway\QuestionGateway;
 use App\Gateway\UserGateway;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -52,12 +52,13 @@ class Webhook extends Controller
      */
     private $user;
 
+
     public function __construct(
         Request $request,
         Response $response,
         Logger $logger,
         EventLogGateway $logGateway,
-        UserGateWay $userGateway,
+        UserGateway $userGateway,
         QuestionGateway $questionGateway
     ) {
         $this->request = $request;
@@ -67,12 +68,9 @@ class Webhook extends Controller
         $this->userGateway = $userGateway;
         $this->questionGateway = $questionGateway;
 
-        $channel_access_token = "VxYKeAbFGENN1alp0C5PO0kXk5VXiEwQBkMdo7t/AwxmzwqSVpVi4uAF1lvc7b4Ya0+n1PUBwqq8+u/nJ9itb0T1A8H2PE5zmEkKAM/wWEH/kFUAXUNVcATk+XN4SmN5p9xkQctGJYBVVwZplTvCJAdB04t89/1O/w1cDnyilFU=";
-        $channel_secret = "b9d833aadaa179f828267bd8ee0a228f";
-
         // create bot object
-        $httpClient = new CurlHTTPClient(getenv($channel_access_token));
-        $this->bot = new LINEBot($httpClient, ['channelSecret' => getenv($channel_secret)]);
+        $httpClient = new CurlHTTPClient(getenv('VxYKeAbFGENN1alp0C5PO0kXk5VXiEwQBkMdo7t/AwxmzwqSVpVi4uAF1lvc7b4Ya0+n1PUBwqq8+u/nJ9itb0T1A8H2PE5zmEkKAM/wWEH/kFUAXUNVcATk+XN4SmN5p9xkQctGJYBVVwZplTvCJAdB04t89/1O/w1cDnyilFU='));
+        $this->bot  = new LINEBot($httpClient, ['channelSecret' => getenv('b9d833aadaa179f828267bd8ee0a228f')]);
     }
 
     public function __invoke()
@@ -80,7 +78,7 @@ class Webhook extends Controller
         // get request
         $body = $this->request->all();
 
-        // debugging data
+        // debuging data
         $this->logger->debug('Body', $body);
 
         // save log
