@@ -144,7 +144,7 @@ class Webhook extends Controller
             // save user data
             $this->userGateway->saveUser(
                 $profile['userId'],
-                $profile['displayNama']
+                $profile['displayName']
             );
         }
     }
