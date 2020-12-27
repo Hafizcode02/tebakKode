@@ -154,7 +154,7 @@ class Webhook extends Controller
     {
         $userMessage = $event['message']['text'];
         if ($this->user['number'] == 0) {
-            if (strtolower($userMessage) == 'Mulai') {
+            if (strtolower($userMessage) == 'mulai') {
                 // reset score
                 $this->userGateway->setScore($this->user['user_id'], 0);
                 // update number progress
