@@ -85,6 +85,6 @@ class Webhook extends Controller
         $signature = $this->request->server('HTTP_X_LINE_SIGNATURE') ?: '-';
         $this->logGateway->saveLog($signature, json_encode($body, true));
 
-        return $this->handleEvents();
+        // return $this->handleEvents();
     }
 }
