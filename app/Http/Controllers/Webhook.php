@@ -85,6 +85,67 @@ class Webhook extends Controller
         $signature = $this->request->server('HTTP_X_LINE_SIGNATURE') ?: '-';
         $this->logGateway->saveLog($signature, json_encode($body, true));
 
-        // return $this->handleEvents();
+        return $this->handleEvents();
+    }
+
+    private function handleEvents()
+    {
+        $data = $this->request->all();
+
+        if (is_array($data['events'])) {
+            foreach ($data['events'] as $event) {
+                if (!isset($event['source']['userId'])) continue;
+
+                $this->user = $this->userGateway->getUser($event['source']['userId']);
+
+                if (!$this->user) {
+                    $this->followCallback($event);
+                } else {
+                    if ($event['type'] == 'message') {
+                        if (method_exists($this, $event['message']['type'] . 'Message')) {
+                            $this->{$event['message']['type'] . 'Message'}($event);
+                        }
+                    } else {
+                        if (method_exists($this, $event['type'] . 'Callback')) {
+                            $this->{$event['type'] . 'Callback'}($event);
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->response->setContent("No events found!");
+        $this->response->setStatusCode(200);
+        return $this->response;
+    }
+
+    private function followCallback($event)
+    {
+        $res = $this->bot->getProfile($event['source']['userId']);
+        if ($res->isSucceeded()) {
+            $profile =  $res->getJSONDecodedBody();
+
+            // create welcome messages
+            $message = "Salam Kenal, " . $profile['displayName'] . "!\n";
+            $message .= "Silahkan Kirim pesan \"Mulai\" untuk menulis kuis Tebak Coding.";
+            $textmessageBuilder = new TextMessageBuilder($message);
+
+            // create sticker message
+            $stickerMessageBuilder = new StickerMessageBuilder(1, 3);
+
+            // merge all message
+            $multiMessageBuilder = new MultiMessageBuilder();
+            $multiMessageBuilder->add($textmessageBuilder);
+            $multiMessageBuilder->add($stickerMessageBuilder);
+
+            // send reply message
+            $this->bot->replyMessage($event['replyToken'], $multiMessageBuilder);
+
+            // save user data
+            $this->userGateway->saveUser(
+                $profile['userId'],
+                $profile['displayNama']
+            );
+        }
     }
 }
